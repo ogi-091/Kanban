@@ -11,6 +11,8 @@ interface SidebarProps {
   directoryName: string | null;
   isMobileOpen: boolean;
   onMobileClose: () => void;
+  isDesktopOpen: boolean;
+  onDesktopToggle: () => void;
   onSelectNote: (note: Note) => void;
 }
 
@@ -20,6 +22,8 @@ export function Sidebar({
   directoryName,
   isMobileOpen,
   onMobileClose,
+  isDesktopOpen,
+  onDesktopToggle,
   onSelectNote,
 }: SidebarProps) {
   const { notes, setEditingNoteId } = useNotes();
@@ -54,7 +58,13 @@ export function Sidebar({
         className={`
           fixed top-0 left-0 h-full w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800
           flex flex-col z-50 transition-transform duration-300 ease-in-out
-          ${isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+          ${
+            isMobileOpen
+              ? 'translate-x-0'
+              : isDesktopOpen
+              ? '-translate-x-full lg:translate-x-0'
+              : '-translate-x-full'
+          }
         `}
       >
         {/* ヘッダー */}
@@ -72,6 +82,7 @@ export function Sidebar({
             <button
               onClick={onMobileClose}
               className="lg:hidden p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded"
+              aria-label="サイドバーを閉じる"
             >
               <svg
                 className="w-5 h-5 text-gray-500 dark:text-gray-400"
@@ -85,6 +96,26 @@ export function Sidebar({
                 <path d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
+            {/* デスクトップ用閉じるボタン（サイドバーが開いている時のみ表示） */}
+            {isDesktopOpen && (
+              <button
+                onClick={onDesktopToggle}
+                className="hidden lg:flex p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded"
+                aria-label="サイドバーを閉じる"
+              >
+                <svg
+                  className="w-5 h-5 text-gray-500 dark:text-gray-400"
+                  fill="none"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+                </svg>
+              </button>
+            )}
           </div>
 
           {/* ダークモードトグル */}
