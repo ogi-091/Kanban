@@ -20,3 +20,22 @@ export interface Column {
   tasks: Task[];
 }
 
+// アプリケーションビュー
+export type AppView = 'kanban' | 'notes';
+
+// メモ関連の型定義
+export interface Note {
+  id: string;
+  title: string;
+  content: string;
+  tags?: string[];
+  isFavorite: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface NotesData {
+  notes: Note[];
+  lastModified: string;
+}
+

@@ -1,6 +1,7 @@
-import { KanbanData, Task } from './types';
+import { KanbanData, Task, NotesData, Note } from './types';
 
 const FILE_NAME = 'kanban-data.json';
+const NOTES_FILE_NAME = 'notes-data.json';
 
 let directoryHandle: FileSystemDirectoryHandle | null = null;
 
@@ -221,5 +222,152 @@ export function hasDirectorySelected(): boolean {
  */
 export function getDirectoryName(): string | null {
   return directoryHandle?.name || null;
+}
+
+// ========================================
+// メモ機能関連
+// ========================================
+
+/**
+ * NotesDataの型チェック
+ */
+function isValidNotesData(data: unknown): data is NotesData {
+  if (!data || typeof data !== 'object') {
+    return false;
+  }
+
+  const obj = data as Record<string, unknown>;
+
+  // notesプロパティの確認
+  if (!Array.isArray(obj.notes)) {
+    return false;
+  }
+
+  // 各メモの型チェック
+  for (const note of obj.notes) {
+    if (!isValidNote(note)) {
+      return false;
+    }
+  }
+
+  // lastModifiedプロパティの確認
+  if (typeof obj.lastModified !== 'string') {
+    return false;
+  }
+
+  return true;
+}
+
+/**
+ * Noteの型チェック
+ */
+function isValidNote(note: unknown): note is Note {
+  if (!note || typeof note !== 'object') {
+    return false;
+  }
+
+  const obj = note as Record<string, unknown>;
+
+  return (
+    typeof obj.id === 'string' &&
+    typeof obj.title === 'string' &&
+    typeof obj.content === 'string' &&
+    typeof obj.isFavorite === 'boolean' &&
+    typeof obj.createdAt === 'string' &&
+    typeof obj.updatedAt === 'string' &&
+    (obj.tags === undefined || Array.isArray(obj.tags))
+  );
+}
+
+/**
+ * メモデータをJSONファイルに保存
+ */
+export async function saveNotesData(data: NotesData): Promise<void> {
+  try {
+    if (!directoryHandle) {
+      throw new Error('保存先ディレクトリが選択されていません。');
+    }
+
+    const hasPermission = await checkPermission();
+    if (!hasPermission) {
+      throw new Error('ディレクトリへのアクセス権限がありません。');
+    }
+
+    const fileHandle = await directoryHandle.getFileHandle(NOTES_FILE_NAME, {
+      create: true,
+    });
+
+    const writable = await fileHandle.createWritable();
+    await writable.write(JSON.stringify(data, null, 2));
+    await writable.close();
+
+    console.log('Notes data saved successfully');
+  } catch (error) {
+    console.error('Failed to save notes data:', error);
+    
+    // ユーザーフレンドリーなエラーメッセージに変換
+    if (error instanceof Error) {
+      if (error.message.includes('保存先') || error.message.includes('アクセス権限')) {
+        throw error;
+      }
+      throw new Error(`メモデータの保存に失敗しました: ${error.message}`);
+    }
+    throw new Error('メモデータの保存に失敗しました。');
+  }
+}
+
+/**
+ * JSONファイルからメモデータを読み込み
+ */
+export async function loadNotesData(): Promise<NotesData | null> {
+  try {
+    if (!directoryHandle) {
+      return null;
+    }
+
+    const hasPermission = await checkPermission();
+    if (!hasPermission) {
+      return null;
+    }
+
+    const fileHandle = await directoryHandle.getFileHandle(NOTES_FILE_NAME);
+    const file = await fileHandle.getFile();
+    const contents = await file.text();
+    
+    // JSONのパース
+    let parsedData: unknown;
+    try {
+      parsedData = JSON.parse(contents);
+    } catch (parseError) {
+      console.error('Failed to parse JSON:', parseError);
+      throw new Error('メモデータファイルの形式が正しくありません。');
+    }
+
+    // データのバリデーション
+    if (!isValidNotesData(parsedData)) {
+      console.error('Invalid notes data structure:', parsedData);
+      throw new Error('メモデータファイルの構造が正しくありません。');
+    }
+
+    console.log('Notes data loaded successfully');
+    return parsedData;
+  } catch (error) {
+    if ((error as Error).name === 'NotFoundError') {
+      // ファイルが存在しない場合は null を返す
+      console.log('No existing notes data file found');
+      return null;
+    }
+    
+    console.error('Failed to load notes data:', error);
+    
+    // ユーザーフレンドリーなエラーメッセージに変換
+    if (error instanceof Error) {
+      if (error.message.includes('メモデータファイル')) {
+        throw error;
+      }
+      throw new Error(`メモデータの読み込みに失敗しました: ${error.message}`);
+    }
+    throw new Error('メモデータの読み込みに失敗しました。');
+  }
 }
 

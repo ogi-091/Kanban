@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Task, KanbanData, TaskStatus } from './types';
+import { Task, KanbanData, TaskStatus, AppView } from './types';
 import {
   loadKanbanData,
   saveKanbanData,
@@ -18,6 +18,8 @@ interface KanbanContextType {
   directoryName: string | null;
   isFileSystemSupported: boolean;
   toasts: ToastMessage[];
+  currentView: AppView;
+  setCurrentView: (view: AppView) => void;
   addTask: (title: string, description: string) => Promise<void>;
   updateTask: (id: string, updates: Partial<Task>) => Promise<void>;
   deleteTask: (id: string) => Promise<void>;
@@ -35,6 +37,7 @@ export function KanbanProvider({ children }: { children: ReactNode }) {
   const [directoryName, setDirectoryName] = useState<string | null>(null);
   const [isFileSystemSupported] = useState(() => isFileSystemAccessSupported());
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
+  const [currentView, setCurrentView] = useState<AppView>('kanban');
 
   // トースト通知を表示
   const showToast = (message: string, type: ToastType) => {
@@ -202,6 +205,8 @@ export function KanbanProvider({ children }: { children: ReactNode }) {
     directoryName,
     isFileSystemSupported,
     toasts,
+    currentView,
+    setCurrentView,
     addTask,
     updateTask,
     deleteTask,

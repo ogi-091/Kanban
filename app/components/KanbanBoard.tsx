@@ -16,7 +16,6 @@ import { Task, TaskStatus } from '../lib/types';
 import { DroppableColumn } from './DroppableColumn';
 import { AddTaskDialog } from './AddTaskDialog';
 import { EditTaskDialog } from './EditTaskDialog';
-import { DarkModeToggle } from './DarkModeToggle';
 import { ToastContainer } from './Toast';
 
 const columns: { id: TaskStatus; title: string; color: string }[] = [
@@ -26,7 +25,7 @@ const columns: { id: TaskStatus; title: string; color: string }[] = [
 ];
 
 export function KanbanBoard() {
-  const { tasks, addTask, updateTask, deleteTask, moveTask, directoryName, toasts, removeToast } =
+  const { tasks, addTask, updateTask, deleteTask, moveTask, toasts, removeToast } =
     useKanban();
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -127,29 +126,36 @@ export function KanbanBoard() {
       <ToastContainer toasts={toasts} onClose={removeToast} />
 
       <div className="min-h-screen">
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-4 py-8 max-w-7xl">
           {/* ヘッダー */}
           <div className="mb-8">
-            <div className="flex justify-between items-center mb-4">
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-                カンバンボード
-              </h1>
-              <div className="flex gap-3 items-center">
-                <DarkModeToggle />
-                <button
-                  onClick={() => setIsAddDialogOpen(true)}
-                  disabled={isProcessing}
-                  className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-lg transition-colors shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  + タスクを追加
-                </button>
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+                  タスク管理
+                </h1>
+                <div className="text-sm text-gray-500 dark:text-gray-400">
+                  全 {tasks.length} 件のタスク
+                </div>
               </div>
-            </div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">
-              📁 保存先: <span className="font-mono">{directoryName}</span>
-            </div>
-            <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-              全 {tasks.length} 件のタスク
+              <button
+                onClick={() => setIsAddDialogOpen(true)}
+                disabled={isProcessing}
+                className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white font-semibold py-2.5 px-6 rounded-lg transition-colors shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path d="M12 4v16m8-8H4" />
+                </svg>
+                タスクを追加
+              </button>
             </div>
           </div>
 
