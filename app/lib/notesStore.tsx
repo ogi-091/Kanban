@@ -12,6 +12,8 @@ import { ToastType } from '../components/Toast';
 interface NotesContextType {
   notes: Note[];
   isLoading: boolean;
+  editingNoteId: string | null;
+  setEditingNoteId: (id: string | null) => void;
   addNote: (title: string, content: string, tags?: string[]) => Promise<Note | null>;
   updateNote: (id: string, updates: Partial<Note>) => Promise<void>;
   deleteNote: (id: string) => Promise<void>;
@@ -31,6 +33,7 @@ export function NotesProvider({
 }) {
   const [notes, setNotes] = useState<Note[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
 
   // データ保存ヘルパー
   const saveData = async (updatedNotes: Note[]): Promise<boolean> => {
@@ -160,6 +163,8 @@ export function NotesProvider({
   const value: NotesContextType = {
     notes,
     isLoading,
+    editingNoteId,
+    setEditingNoteId,
     addNote,
     updateNote,
     deleteNote,

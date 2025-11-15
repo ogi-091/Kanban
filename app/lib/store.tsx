@@ -19,7 +19,9 @@ interface KanbanContextType {
   isFileSystemSupported: boolean;
   toasts: ToastMessage[];
   currentView: AppView;
+  editingTaskId: string | null;
   setCurrentView: (view: AppView) => void;
+  setEditingTaskId: (id: string | null) => void;
   addTask: (title: string, description: string) => Promise<void>;
   updateTask: (id: string, updates: Partial<Task>) => Promise<void>;
   deleteTask: (id: string) => Promise<void>;
@@ -38,6 +40,7 @@ export function KanbanProvider({ children }: { children: ReactNode }) {
   const [isFileSystemSupported] = useState(() => isFileSystemAccessSupported());
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const [currentView, setCurrentView] = useState<AppView>('kanban');
+  const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
 
   // トースト通知を表示
   const showToast = (message: string, type: ToastType) => {
@@ -206,7 +209,9 @@ export function KanbanProvider({ children }: { children: ReactNode }) {
     isFileSystemSupported,
     toasts,
     currentView,
+    editingTaskId,
     setCurrentView,
+    setEditingTaskId,
     addTask,
     updateTask,
     deleteTask,

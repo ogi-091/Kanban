@@ -15,7 +15,6 @@ import { useKanban } from '../lib/store';
 import { Task, TaskStatus } from '../lib/types';
 import { DroppableColumn } from './DroppableColumn';
 import { AddTaskDialog } from './AddTaskDialog';
-import { EditTaskDialog } from './EditTaskDialog';
 import { ToastContainer } from './Toast';
 
 const columns: { id: TaskStatus; title: string; color: string }[] = [
@@ -25,12 +24,19 @@ const columns: { id: TaskStatus; title: string; color: string }[] = [
 ];
 
 export function KanbanBoard() {
-  const { tasks, addTask, updateTask, deleteTask, moveTask, toasts, removeToast } =
-    useKanban();
+  const { 
+    tasks, 
+    addTask, 
+    updateTask, 
+    deleteTask, 
+    moveTask, 
+    toasts, 
+    removeToast,
+    setCurrentView,
+    setEditingTaskId,
+  } = useKanban();
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
   const sensors = useSensors(
@@ -82,25 +88,8 @@ export function KanbanBoard() {
   };
 
   const handleEditTask = (task: Task) => {
-    setEditingTask(task);
-    setIsEditDialogOpen(true);
-  };
-
-  const handleUpdateTask = async (
-    id: string,
-    title: string,
-    description: string
-  ) => {
-    try {
-      setIsProcessing(true);
-      await updateTask(id, { title, description });
-      setIsEditDialogOpen(false);
-      setEditingTask(null);
-    } catch (error) {
-      console.error('Failed to update task:', error);
-    } finally {
-      setIsProcessing(false);
-    }
+    setEditingTaskId(task.id);
+    setCurrentView('task-edit');
   };
 
   const handleDeleteTask = async (id: string) => {
@@ -206,15 +195,6 @@ export function KanbanBoard() {
         isOpen={isAddDialogOpen}
         onClose={() => setIsAddDialogOpen(false)}
         onAdd={handleAddTask}
-      />
-      <EditTaskDialog
-        isOpen={isEditDialogOpen}
-        task={editingTask}
-        onClose={() => {
-          setIsEditDialogOpen(false);
-          setEditingTask(null);
-        }}
-        onUpdate={handleUpdateTask}
       />
     </>
   );
