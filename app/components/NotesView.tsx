@@ -3,8 +3,8 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Note } from '../lib/types';
 import { useNotes } from '../lib/notesStore';
+import { useKanban } from '../lib/store';
 import { NoteCard } from './NoteCard';
-import { NoteEditor } from './NoteEditor';
 
 interface NotesViewProps {
   selectedNote?: Note | null;
@@ -12,17 +12,18 @@ interface NotesViewProps {
 }
 
 export function NotesView({ selectedNote, onNoteClose }: NotesViewProps) {
-  const { notes, addNote, updateNote, deleteNote, toggleFavorite } = useNotes();
-  const [editingNote, setEditingNote] = useState<Note | null>(null);
+  const { notes, addNote, deleteNote, toggleFavorite, setEditingNoteId } = useNotes();
+  const { setCurrentView } = useKanban();
   const [filterFavorites, setFilterFavorites] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
   // サイドバーからメモが選択された時に開く
   useEffect(() => {
     if (selectedNote) {
-      setEditingNote(selectedNote);
+      setEditingNoteId(selectedNote.id);
+      setCurrentView('note-edit');
     }
-  }, [selectedNote]);
+  }, [selectedNote, setEditingNoteId, setCurrentView]);
 
   // フィルターと検索を適用
   const filteredNotes = useMemo(() => {
@@ -57,24 +58,14 @@ export function NotesView({ selectedNote, onNoteClose }: NotesViewProps) {
     // 新しいメモを作成してエディターを開く
     const newNote = await addNote('', '');
     if (newNote) {
-      setEditingNote(newNote);
+      setEditingNoteId(newNote.id);
+      setCurrentView('note-edit');
     }
   };
 
-  const handleSaveNote = async (
-    id: string,
-    title: string,
-    content: string,
-    tags: string[]
-  ) => {
-    await updateNote(id, { title, content, tags });
-    setEditingNote(null);
-    onNoteClose?.();
-  };
-
-  const handleCloseEditor = () => {
-    setEditingNote(null);
-    onNoteClose?.();
+  const handleEditNote = (note: Note) => {
+    setEditingNoteId(note.id);
+    setCurrentView('note-edit');
   };
 
   return (
@@ -221,7 +212,7 @@ export function NotesView({ selectedNote, onNoteClose }: NotesViewProps) {
                 <NoteCard
                   key={note.id}
                   note={note}
-                  onEdit={setEditingNote}
+                  onEdit={handleEditNote}
                   onDelete={deleteNote}
                   onToggleFavorite={toggleFavorite}
                 />
@@ -230,15 +221,6 @@ export function NotesView({ selectedNote, onNoteClose }: NotesViewProps) {
           )}
         </div>
       </div>
-
-      {/* エディター */}
-      {editingNote && (
-        <NoteEditor
-          note={editingNote}
-          onSave={handleSaveNote}
-          onClose={handleCloseEditor}
-        />
-      )}
     </>
   );
 }

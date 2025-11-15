@@ -21,7 +21,7 @@ export interface Column {
 }
 
 // アプリケーションビュー
-export type AppView = 'kanban' | 'notes';
+export type AppView = 'kanban' | 'notes' | 'task-edit' | 'note-edit';
 
 // メモ関連の型定義
 export interface Note {
