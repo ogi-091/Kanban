@@ -22,7 +22,7 @@ export function Sidebar({
   onMobileClose,
   onSelectNote,
 }: SidebarProps) {
-  const { notes } = useNotes();
+  const { notes, setEditingNoteId } = useNotes();
   
   // お気に入りのメモのみを取得
   const favoriteNotes = notes.filter((note) => note.isFavorite);
@@ -33,8 +33,9 @@ export function Sidebar({
   };
 
   const handleSelectNote = (note: Note) => {
-    onSelectNote(note);
-    onViewChange('notes'); // メモビューに切り替え
+    // お気に入りメモをクリックした場合は編集画面に直接遷移
+    setEditingNoteId(note.id);
+    onViewChange('note-edit');
     onMobileClose(); // モバイルでメモ選択したらサイドバーを閉じる
   };
 
