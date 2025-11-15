@@ -107,6 +107,7 @@ export default function Home() {
     showToast,
   } = useKanban();
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [isDesktopSidebarOpen, setIsDesktopSidebarOpen] = useState(true);
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
 
   const handleSelectDirectory = async () => {
@@ -143,29 +144,55 @@ export default function Home() {
           directoryName={directoryName}
           isMobileOpen={isMobileSidebarOpen}
           onMobileClose={() => setIsMobileSidebarOpen(false)}
+          isDesktopOpen={isDesktopSidebarOpen}
+          onDesktopToggle={() => setIsDesktopSidebarOpen(!isDesktopSidebarOpen)}
           onSelectNote={setSelectedNote}
         />
 
         {/* メインコンテンツエリア */}
-        <main className="flex-1 overflow-y-auto lg:ml-64">
-          {/* モバイル用ヘッダー（ハンバーガーメニュー） */}
-          <div className="lg:hidden sticky top-0 z-30 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-4 py-3">
-            <button
-              onClick={() => setIsMobileSidebarOpen(true)}
-              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
-            >
-              <svg
-                className="w-6 h-6 text-gray-600 dark:text-gray-400"
-                fill="none"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
+        <main className={`flex-1 overflow-y-auto transition-all duration-300 ${isDesktopSidebarOpen ? 'lg:ml-64' : 'lg:ml-0'}`}>
+          {/* ヘッダー（モバイル用ハンバーガーメニュー + デスクトップ用開閉ボタン） */}
+          <div className="sticky top-0 z-30 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-4 py-3">
+            <div className="flex items-center justify-between">
+              {/* モバイル用ハンバーガーメニュー */}
+              <button
+                onClick={() => setIsMobileSidebarOpen(true)}
+                className="lg:hidden p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
               >
-                <path d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
+                <svg
+                  className="w-6 h-6 text-gray-600 dark:text-gray-400"
+                  fill="none"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+              
+              {/* デスクトップ用サイドバー開閉ボタン（サイドバーが閉じている時のみ表示） */}
+              {!isDesktopSidebarOpen && (
+                <button
+                  onClick={() => setIsDesktopSidebarOpen(!isDesktopSidebarOpen)}
+                  className="hidden lg:flex p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                  aria-label="サイドバーを開く"
+                >
+                  <svg
+                    className="w-6 h-6 text-gray-600 dark:text-gray-400"
+                    fill="none"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path d="M13 19l7-7-7-7M6 19l7-7-7-7" />
+                  </svg>
+                </button>
+              )}
+            </div>
           </div>
 
           <MainContent />
