@@ -1,0 +1,22 @@
+export type TaskStatus = 'todo' | 'in-progress' | 'done';
+
+export interface Task {
+  id: string;
+  title: string;
+  description: string;
+  status: TaskStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface KanbanData {
+  tasks: Task[];
+  lastModified: string;
+}
+
+export interface Column {
+  id: TaskStatus;
+  title: string;
+  tasks: Task[];
+}
+
