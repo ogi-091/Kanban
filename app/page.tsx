@@ -157,6 +157,8 @@ export default function Home() {
               <button
                 onClick={() => setIsMobileSidebarOpen(true)}
                 className="lg:hidden p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                aria-label="メニューを開く"
+                aria-expanded={isMobileSidebarOpen}
               >
                 <svg
                   className="w-6 h-6 text-gray-600 dark:text-gray-400"
