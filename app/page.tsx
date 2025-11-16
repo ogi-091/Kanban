@@ -104,7 +104,6 @@ export default function Home() {
     initializeDirectory,
     currentView,
     setCurrentView,
-    showToast,
   } = useKanban();
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isDesktopSidebarOpen, setIsDesktopSidebarOpen] = useState(true);
@@ -135,7 +134,7 @@ export default function Home() {
   }
 
   return (
-    <NotesProvider showToast={showToast}>
+    <NotesProvider>
       <div className="flex h-screen overflow-hidden">
         {/* サイドバー */}
         <Sidebar

@@ -7,7 +7,6 @@ import {
   saveNotesData,
   hasDirectorySelected,
 } from './fileSystem';
-import { ToastType } from '../components/Toast';
 
 interface NotesContextType {
   notes: Note[];
@@ -19,17 +18,14 @@ interface NotesContextType {
   deleteNote: (id: string) => Promise<void>;
   toggleFavorite: (id: string) => Promise<void>;
   loadNotes: () => Promise<void>;
-  showToast: (message: string, type: ToastType) => void;
 }
 
 const NotesContext = createContext<NotesContextType | undefined>(undefined);
 
 export function NotesProvider({ 
   children,
-  showToast,
 }: { 
   children: ReactNode;
-  showToast: (message: string, type: ToastType) => void;
 }) {
   const [notes, setNotes] = useState<Note[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -47,8 +43,6 @@ export function NotesProvider({
       return true;
     } catch (error) {
       console.error('Failed to save notes data:', error);
-      const errorMessage = error instanceof Error ? error.message : 'メモデータの保存に失敗しました。';
-      showToast(errorMessage, 'error');
       return false;
     }
   };
@@ -65,8 +59,6 @@ export function NotesProvider({
       }
     } catch (error) {
       console.error('Failed to load notes data:', error);
-      const errorMessage = error instanceof Error ? error.message : 'メモデータの読み込みに失敗しました。';
-      showToast(errorMessage, 'error');
     } finally {
       setIsLoading(false);
     }
@@ -96,7 +88,6 @@ export function NotesProvider({
     if (hasDirectorySelected()) {
       const success = await saveData(updatedNotes);
       if (success) {
-        showToast('メモを追加しました。', 'success');
         return newNote;
       } else {
         // 保存に失敗した場合はロールバック
@@ -104,7 +95,6 @@ export function NotesProvider({
         return null;
       }
     } else {
-      showToast('メモを追加しました。（保存先未設定）', 'warning');
       return newNote;
     }
   };
@@ -123,13 +113,11 @@ export function NotesProvider({
     if (hasDirectorySelected()) {
       const success = await saveData(updatedNotes);
       if (success) {
-        showToast('メモを更新しました。', 'success');
       } else {
         // 保存に失敗した場合はロールバック
         setNotes(previousNotes);
       }
     } else {
-      showToast('メモを更新しました。（保存先未設定）', 'warning');
     }
   };
 
@@ -142,13 +130,11 @@ export function NotesProvider({
     if (hasDirectorySelected()) {
       const success = await saveData(updatedNotes);
       if (success) {
-        showToast('メモを削除しました。', 'success');
       } else {
         // 保存に失敗した場合はロールバック
         setNotes(previousNotes);
       }
     } else {
-      showToast('メモを削除しました。（保存先未設定）', 'warning');
     }
   };
 
@@ -170,7 +156,6 @@ export function NotesProvider({
     deleteNote,
     toggleFavorite,
     loadNotes,
-    showToast,
   };
 
   return (
