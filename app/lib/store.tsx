@@ -37,6 +37,21 @@ export function KanbanProvider({ children }: { children: ReactNode }) {
   const [currentView, setCurrentView] = useState<AppView>('kanban');
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
 
+  // 安全なID生成（crypto.randomUUIDが使えない環境ではフォールバック）
+  const generateId = (): string => {
+    try {
+      const maybeCrypto = (typeof globalThis !== 'undefined'
+        ? (globalThis as any).crypto
+        : undefined) as { randomUUID?: () => string } | undefined;
+      if (maybeCrypto && typeof maybeCrypto.randomUUID === 'function') {
+        return `task-${maybeCrypto.randomUUID()}`;
+      }
+    } catch {
+      // ignore
+    }
+    return `task-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+  };
+
   // 初回ロード
   useEffect(() => {
     const loadData = async () => {
@@ -102,7 +117,7 @@ export function KanbanProvider({ children }: { children: ReactNode }) {
   // タスク追加
   const addTask = async (title: string, description: string) => {
     const newTask: Task = {
-      id: `task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      id: generateId(),
       title,
       description,
       status: 'todo',
