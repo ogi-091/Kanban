@@ -10,14 +10,12 @@ import {
   getDirectoryName,
   isFileSystemAccessSupported,
 } from './fileSystem';
-import { ToastMessage, ToastType } from '../components/Toast';
 
 interface KanbanContextType {
   tasks: Task[];
   isLoading: boolean;
   directoryName: string | null;
   isFileSystemSupported: boolean;
-  toasts: ToastMessage[];
   currentView: AppView;
   editingTaskId: string | null;
   setCurrentView: (view: AppView) => void;
@@ -27,8 +25,6 @@ interface KanbanContextType {
   deleteTask: (id: string) => Promise<void>;
   moveTask: (taskId: string, newStatus: TaskStatus) => Promise<void>;
   initializeDirectory: () => Promise<boolean>;
-  showToast: (message: string, type: ToastType) => void;
-  removeToast: (id: string) => void;
 }
 
 const KanbanContext = createContext<KanbanContextType | undefined>(undefined);
@@ -38,20 +34,8 @@ export function KanbanProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [directoryName, setDirectoryName] = useState<string | null>(null);
   const [isFileSystemSupported] = useState(() => isFileSystemAccessSupported());
-  const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const [currentView, setCurrentView] = useState<AppView>('kanban');
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
-
-  // トースト通知を表示
-  const showToast = (message: string, type: ToastType) => {
-    const id = `toast-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    setToasts((prev) => [...prev, { id, message, type }]);
-  };
-
-  // トースト通知を削除
-  const removeToast = (id: string) => {
-    setToasts((prev) => prev.filter((toast) => toast.id !== id));
-  };
 
   // 初回ロード
   useEffect(() => {
@@ -61,14 +45,11 @@ export function KanbanProvider({ children }: { children: ReactNode }) {
           const data = await loadKanbanData();
           if (data) {
             setTasks(data.tasks);
-            showToast('データを読み込みました。', 'success');
           }
           setDirectoryName(getDirectoryName());
         }
       } catch (error) {
         console.error('Failed to load initial data:', error);
-        const errorMessage = error instanceof Error ? error.message : 'データの読み込みに失敗しました。';
-        showToast(errorMessage, 'error');
       } finally {
         setIsLoading(false);
       }
@@ -90,8 +71,6 @@ export function KanbanProvider({ children }: { children: ReactNode }) {
       return true;
     } catch (error) {
       console.error('Failed to save data:', error);
-      const errorMessage = error instanceof Error ? error.message : 'データの保存に失敗しました。';
-      showToast(errorMessage, 'error');
       return false;
     }
   };
@@ -108,21 +87,14 @@ export function KanbanProvider({ children }: { children: ReactNode }) {
           const data = await loadKanbanData();
           if (data) {
             setTasks(data.tasks);
-            showToast('既存のデータを読み込みました。', 'success');
-          } else {
-            showToast('保存先ディレクトリを設定しました。', 'success');
           }
         } catch (loadError) {
           console.error('Failed to load data after directory selection:', loadError);
-          const errorMessage = loadError instanceof Error ? loadError.message : 'データの読み込みに失敗しました。';
-          showToast(errorMessage, 'error');
         }
       }
       return success;
     } catch (error) {
       console.error('Failed to initialize directory:', error);
-      const errorMessage = error instanceof Error ? error.message : 'ディレクトリの選択に失敗しました。';
-      showToast(errorMessage, 'error');
       return false;
     }
   };
@@ -144,13 +116,11 @@ export function KanbanProvider({ children }: { children: ReactNode }) {
     if (hasDirectorySelected()) {
       const success = await saveData(updatedTasks);
       if (success) {
-        showToast('タスクを追加しました。', 'success');
       } else {
         // 保存に失敗した場合はロールバック
         setTasks(tasks);
       }
     } else {
-      showToast('タスクを追加しました。（保存先未設定）', 'warning');
     }
   };
 
@@ -168,13 +138,11 @@ export function KanbanProvider({ children }: { children: ReactNode }) {
     if (hasDirectorySelected()) {
       const success = await saveData(updatedTasks);
       if (success) {
-        showToast('タスクを更新しました。', 'success');
       } else {
         // 保存に失敗した場合はロールバック
         setTasks(previousTasks);
       }
     } else {
-      showToast('タスクを更新しました。（保存先未設定）', 'warning');
     }
   };
 
@@ -187,13 +155,11 @@ export function KanbanProvider({ children }: { children: ReactNode }) {
     if (hasDirectorySelected()) {
       const success = await saveData(updatedTasks);
       if (success) {
-        showToast('タスクを削除しました。', 'success');
       } else {
         // 保存に失敗した場合はロールバック
         setTasks(previousTasks);
       }
     } else {
-      showToast('タスクを削除しました。（保存先未設定）', 'warning');
     }
   };
 
@@ -207,7 +173,6 @@ export function KanbanProvider({ children }: { children: ReactNode }) {
     isLoading,
     directoryName,
     isFileSystemSupported,
-    toasts,
     currentView,
     editingTaskId,
     setCurrentView,
@@ -217,8 +182,6 @@ export function KanbanProvider({ children }: { children: ReactNode }) {
     deleteTask,
     moveTask,
     initializeDirectory,
-    showToast,
-    removeToast,
   };
 
   return (

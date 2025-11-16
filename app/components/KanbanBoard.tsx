@@ -15,7 +15,6 @@ import { useKanban } from '../lib/store';
 import { Task, TaskStatus } from '../lib/types';
 import { DroppableColumn } from './DroppableColumn';
 import { AddTaskDialog } from './AddTaskDialog';
-import { ToastContainer } from './Toast';
 
 const columns: { id: TaskStatus; title: string; color: string }[] = [
   { id: 'todo', title: 'TODO', color: 'bg-gray-100 dark:bg-gray-800' },
@@ -30,8 +29,6 @@ export function KanbanBoard() {
     updateTask, 
     deleteTask, 
     moveTask, 
-    toasts, 
-    removeToast,
     setCurrentView,
     setEditingTaskId,
   } = useKanban();
@@ -111,9 +108,6 @@ export function KanbanBoard() {
 
   return (
     <>
-      {/* トースト通知 */}
-      <ToastContainer toasts={toasts} onClose={removeToast} />
-
       <div className="min-h-screen">
         <div className="container mx-auto px-4 py-8 max-w-7xl">
           {/* ヘッダー */}
