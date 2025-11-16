@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode, useRef } from 'react';
 import { Task, KanbanData, TaskStatus, AppView } from './types';
 import {
   loadKanbanData,
@@ -36,6 +36,7 @@ export function KanbanProvider({ children }: { children: ReactNode }) {
   const [isFileSystemSupported] = useState(() => isFileSystemAccessSupported());
   const [currentView, setCurrentView] = useState<AppView>('kanban');
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
+  const lastTasksRef = useRef<Task[]>([]);
 
   // 安全なID生成（crypto.randomUUIDが使えない環境ではフォールバック）
   const generateId = (): string => {
@@ -124,16 +125,18 @@ export function KanbanProvider({ children }: { children: ReactNode }) {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
-
-    const updatedTasks = [...tasks, newTask];
-    setTasks(updatedTasks);
-    
+    let nextTasksSnapshot: Task[] = [];
+    setTasks((prev) => {
+      lastTasksRef.current = prev;
+      nextTasksSnapshot = [...prev, newTask];
+      return nextTasksSnapshot;
+    });
     if (hasDirectorySelected()) {
-      const success = await saveData(updatedTasks);
+      const success = await saveData(nextTasksSnapshot);
       if (success) {
       } else {
         // 保存に失敗した場合はロールバック
-        setTasks(tasks);
+        setTasks(lastTasksRef.current);
       }
     } else {
     }
@@ -141,21 +144,22 @@ export function KanbanProvider({ children }: { children: ReactNode }) {
 
   // タスク更新
   const updateTask = async (id: string, updates: Partial<Task>) => {
-    const previousTasks = tasks;
-    const updatedTasks = tasks.map((task) =>
-      task.id === id
-        ? { ...task, ...updates, updatedAt: new Date().toISOString() }
-        : task
-    );
-
-    setTasks(updatedTasks);
-    
+    let nextTasksSnapshot: Task[] = [];
+    setTasks((prev) => {
+      lastTasksRef.current = prev;
+      nextTasksSnapshot = prev.map((task) =>
+        task.id === id
+          ? { ...task, ...updates, updatedAt: new Date().toISOString() }
+          : task
+      );
+      return nextTasksSnapshot;
+    });
     if (hasDirectorySelected()) {
-      const success = await saveData(updatedTasks);
+      const success = await saveData(nextTasksSnapshot);
       if (success) {
       } else {
         // 保存に失敗した場合はロールバック
-        setTasks(previousTasks);
+        setTasks(lastTasksRef.current);
       }
     } else {
     }
@@ -163,16 +167,18 @@ export function KanbanProvider({ children }: { children: ReactNode }) {
 
   // タスク削除
   const deleteTask = async (id: string) => {
-    const previousTasks = tasks;
-    const updatedTasks = tasks.filter((task) => task.id !== id);
-    setTasks(updatedTasks);
-    
+    let nextTasksSnapshot: Task[] = [];
+    setTasks((prev) => {
+      lastTasksRef.current = prev;
+      nextTasksSnapshot = prev.filter((task) => task.id !== id);
+      return nextTasksSnapshot;
+    });
     if (hasDirectorySelected()) {
-      const success = await saveData(updatedTasks);
+      const success = await saveData(nextTasksSnapshot);
       if (success) {
       } else {
         // 保存に失敗した場合はロールバック
-        setTasks(previousTasks);
+        setTasks(lastTasksRef.current);
       }
     } else {
     }
